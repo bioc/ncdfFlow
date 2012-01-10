@@ -25,4 +25,9 @@ CHANGES IN 1.0.4:
 		-allow for either flowFrame or matrix to be added by
 		-add sample name to the error message to help troubleshoot the problematic FCS file especially for loading large datasets
 	6.add isNew=FALSE to split method to allow for splitting into multipe cdf files for the sake of parallel computing
-	7.set compress=FALSE to disable compression mode of CDF 		 
+	7.set compress=FALSE to disable compression mode of CDF 		
+CHANGES IN 1.0.5:
+        1.fix the bug in rbind2 method
+	2.fix the bug in [ method for subsetting by channels
+	3.add the dimention check for colnames<- method
+	4.fix the bug in split method
