@@ -1,15 +1,15 @@
 Package: ncdfFlow
 Title: ncdfFlow: A package that provides ncdf based storage for flow cytometry
     data.
-Version: 2.8.21
+Version: 2.8.22
 Author: Mike Jiang,Greg Finak,N. Gopalakrishnan
 Description: Provides netCDF storage based methods and functions for
     manipulation of flow cytometry data.
 Maintainer: Mike Jiang <wjiang2@fhcrc.org>
 Depends:
     R (>= 2.14.0),
-    flowCore (>= 1.28.20),
-    flowViz (>= 1.26.15)
+    flowCore,
+    flowViz
 Imports:
     Biobase,flowCore,flowViz,methods,zlibbioc
 License: Artistic-2.0
