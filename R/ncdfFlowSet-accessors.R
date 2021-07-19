@@ -154,8 +154,8 @@ setMethod("getIndices",
 		{
 		
 			ret<-get(y,obj@indices)
-			if(all(!is.na(ret)))
-				ret <- toLogical(ret)
+			# if(all(!is.na(ret)))
+			# 	ret <- toLogical(ret)
 			ret			
 		})
 #' \code{initIndices} initializes the event indices for the entire ncdfFlowSet with NA
@@ -183,8 +183,8 @@ setMethod("updateIndices",
 		definition=function(obj,y,z)
 		{
 		
-			if(all(!is.na(z)))
-				z <- toBitVec(z)
+			# if(all(!is.na(z)))
+			# 	z <- toBitVec(z)
 			assign(y,z,obj@indices)
 		})
 

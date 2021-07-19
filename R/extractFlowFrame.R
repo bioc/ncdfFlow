@@ -27,15 +27,64 @@
 #' 
 setMethod("[[",
     signature=signature(x="ncdfFlowSet"),
-    definition=function(x, i, j, use.exprs = TRUE, ...)
+    definition=function(x, i, j, ...)
     {
-      
-        if(missing(j))
-          j <- NULL
-
-        readFrame(x, i, j, use.exprs)
-      
+      if(missing(j))
+        j <- NULL
+      .readframe(x, i, j, ...)
     })
+.readframe <- function(x, i, j, use.exprs = TRUE, ...){      
+    if(length(i) != 1)
+        stop("subscript out of bounds (index must have length 1)")
+                        
+        sampleName<-if(is.numeric(i)) sampleNames(x)[[i]] else i
+        fr <- x@frames[[sampleName]]
+
+        #get channel index 
+        origChNames <-x@origColnames ##
+        localChNames <-colnames(fr)
+        
+        #subset by channel
+        if(!is.null(j)){
+          if(is.character(j)){
+            j <- match(j, localChNames)
+            if(any(is.na(j)))
+              stop("subscript out of bounds")
+          }
+         
+          #we don't update description slot(i.e. keywords) as flowCore does 
+          fr@parameters <- fr@parameters[j, , drop = FALSE]
+          localChNames <- localChNames[j]
+        }
+             
+            
+     if(use.exprs){
+                
+                chIndx <- match(localChNames,origChNames)#only fetch the subset of channels
+                
+                Indice <- x@indices[[sampleName]]
+                if(is.null(Indice))
+                  stop("Invalid sample name '",sampleName, "'! It is not found in 'indices' slot!")
+                        subByIndice <- all(!is.na(Indice))
+                
+                        #get sample index
+                        samplePos <- which(x@origSampleVector==sampleName)
+                if(length(samplePos) == 0)
+                  stop("Invalid sample name '", sampleName, "'! It is not found in 'origSampleVector' slot!")
+                
+                mat <- readSlice(x@file, as.integer(chIndx-1), as.integer(samplePos-1))
+                if(!is.matrix(mat)&&mat==FALSE) stop("error when reading cdf.")
+                        
+                #subset data by indices if neccessary   
+                if(subByIndice&&nrow(mat)>0)
+                  mat<-mat[getIndices(x,sampleName),,drop=FALSE]  
+                
+                        
+            colnames(mat) <- localChNames
+            fr@exprs <- mat
+          }                     
+                return(fr)      
+    }
     
     
 #' @rdname extractFlowFrame

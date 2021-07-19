@@ -9,7 +9,6 @@ Maintainer: Mike Jiang <wjiang2@fhcrc.org>, Jake Wagner <jpwagner@fhcrc.org>
 Depends:
     R (>= 2.14.0),
     flowCore(>= 1.51.7),
-    RcppArmadillo,
     methods,
     BH
 Imports:
@@ -19,6 +18,6 @@ Suggests:
 License: file LICENSE
 biocViews: ImmunoOncology, FlowCytometry
 Packaged: 2011-04-04 18:33:38 UTC; Jiang
-LinkingTo: Rcpp,RcppArmadillo,BH, Rhdf5lib
+LinkingTo: cpp11,BH, Rhdf5lib
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

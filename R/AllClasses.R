@@ -30,7 +30,7 @@ NULL
 #' @import zlibbioc 
 NULL
 
-#' @useDynLib "ncdfFlow"
+#' @useDynLib "ncdfFlow",.registration = TRUE
 
 NULL
 
