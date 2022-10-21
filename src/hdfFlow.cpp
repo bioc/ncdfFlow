@@ -1,4 +1,15 @@
-#include "hdfFlow.h"
+#include "hdf5.h"
+#include <cpp11.hpp>
+
+#define DATASETNAME3d "/exprsMat"
+
+#define TRUE            1
+#define FALSE           0
+
+#define MSG_SIZE       1024
+
+#include <vector>
+#include <string>
 #include <boost/lexical_cast.hpp>
 
 
@@ -32,7 +43,7 @@ herr_t custom_print_cb(hid_t estack, void *client_data)
 	hid_t estack_id = H5Eget_current_stack();//copy stack before it is corrupted by my_hdf5_error_handler
 	H5Ewalk2(estack_id, H5E_WALK_DOWNWARD, my_hdf5_error_handler, client_data);
 	H5Eclose_stack(estack_id);
-	Rcpp::stop("hdf Error");
+	cpp11::stop("hdf Error");
     return 0;
 
 }
@@ -118,7 +129,7 @@ herr_t _createFile3d(const char * fName, unsigned nSample, unsigned nChnl, unsig
 	return status;
 }
 
-// [[Rcpp::export]]
+[[cpp11::register]]
 bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio, bool is_libver_earliest = false)
 {
 
@@ -136,7 +147,6 @@ bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int
  * We separate the open and read file so that multi-sample read operations can share the same file id.
  *
  */
-// [[Rcpp::export]]
 void open_hdf(std::string filename, unsigned flags, hid_t & fileid, hid_t & dataset, hid_t & dataspace, bool & is3d)
 {
   H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
@@ -165,17 +175,17 @@ void open_hdf(std::string filename, unsigned flags, hid_t & fileid, hid_t & data
 /*
  * inline _writeSlice and _writeSlice2d code
  */
-// [[Rcpp::export]]
-bool writeSlice(std::string filename, Rcpp::NumericMatrix data, std::vector<int> chIndx, int sampleIndx, int nRatio) {
+[[cpp11::register]]
+bool writeSlice(std::string filename, cpp11::doubles_matrix data, std::vector<int> chIndx, int sampleIndx, int nRatio) {
 
 	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
 
-	double *mat = REAL(data.get__());
+	double *mat = REAL(data.data());
 
 	int chCount = chIndx.size();
 
 
-    unsigned nEvents = data.rows();
+    unsigned nEvents = data.nrow();
 
     sampleIndx--;//convert from R to C indexing
 	/*
@@ -253,7 +263,7 @@ bool writeSlice(std::string filename, Rcpp::NumericMatrix data, std::vector<int>
 		  status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
 		  int nSample = dims[0];//get total number of samples
 		  if(sampleIndx >= nSample)
-		  		Rcpp::stop("writeSlice error!sample index exceeds the boundary.");
+		  		cpp11::stop("writeSlice error!sample index exceeds the boundary.");
 		  unsigned * eCount = new unsigned[nSample];
 		  attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
 		  status = H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
@@ -399,7 +409,6 @@ bool writeSlice(std::string filename, Rcpp::NumericMatrix data, std::vector<int>
  *
  */
 
-// [[Rcpp::export]]
 unsigned get_event_number(hid_t fileid, hid_t & dataset, hid_t & dataspace, unsigned sampleIndx, bool is3d)
 {
 	unsigned nEvents;
@@ -414,7 +423,7 @@ unsigned get_event_number(hid_t fileid, hid_t & dataset, hid_t & dataspace, unsi
 		H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
 		unsigned nSample = dims[0];//get total number of samples
 		if(sampleIndx >= nSample)
-			Rcpp::stop("readSlice error!sample index exceeds the boundary.");
+			cpp11::stop("readSlice error!sample index exceeds the boundary.");
 		unsigned * eCount = (unsigned *) malloc(sizeof(unsigned) * nSample);
 		attrID = H5Aopen(dataset, "eventCount", H5P_DEFAULT);
 		H5Aread(attrID, H5T_NATIVE_UINT32, eCount);
@@ -462,18 +471,16 @@ unsigned get_event_number(hid_t fileid, hid_t & dataset, hid_t & dataspace, unsi
 }
 /*
  * since events number is stored in hdf we have to separate get_event_number call from readSlice so that we can separate the logic of
- *  dynamic allocation of memory buffer either through Rcpp (Rcpp::NumericVector mat(nEvents * nCh))
+ *  dynamic allocation of memory buffer either through cpp11 (cpp11::NumericVector mat(nEvents * nCh))
  *  or pure C ( double * mat = new double[nEvents * nCh]) thus we have the option to use them in the pure c++ code evnironment
  * Thus, dataset and dataspace are assumed to be already opened by get_event_number call and there is no validity check in readSlice
  * and up to caller to do this check carefully
  */
 
-// [[Rcpp::plugins(hdf5)]]
-// [[Rcpp::depends(BH,RcppArmadillo)]]
 void readSlice_cpp(hid_t fileid, hid_t dataset, hid_t dataspace
-								, std::vector<unsigned> chIndx
-								, unsigned sampleIndx
-								, unsigned nEvents
+								, std::vector<int> chIndx
+								, int sampleIndx
+								, int nEvents
 								, double * data_out
 								, bool is3d
 								)
@@ -499,7 +506,7 @@ void readSlice_cpp(hid_t fileid, hid_t dataset, hid_t dataspace
 		status  = H5Sget_simple_extent_dims(dataspace, dims, NULL); //get dimensions of datset
 		unsigned nSample = dims[0];//get total number of samples
 		if(sampleIndx >= nSample)
-			Rcpp::stop("readSlice error!sample index exceeds the boundary.");
+			cpp11::stop("readSlice error!sample index exceeds the boundary.");
 
 
 		/*
@@ -617,7 +624,6 @@ void readSlice_cpp(hid_t fileid, hid_t dataset, hid_t dataspace
 	H5Sclose(memspace);
 }
 
-// [[Rcpp::export]]
 void close_hdf(hid_t fileid)
 {
 
@@ -625,19 +631,22 @@ void close_hdf(hid_t fileid)
 
 }
 
-/*
- * the reason for his wrapper is that Rcpp does not support SEXP to double * conversion
- */
-// [[Rcpp::export]]
-void readSlice(hid_t fileid, hid_t dataset, hid_t dataspace
-								, std::vector<unsigned> chIndx
-								, unsigned sampleIndx
-								, unsigned nEvents
-								, Rcpp::NumericVector data_out
-								, bool is3d
-								)
-{
-	double * data = REAL(data_out.get__());
-	readSlice_cpp(fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data, is3d);
-}
 
+[[cpp11::register]]
+cpp11::writable::doubles_matrix readSlice(std::string file, std::vector<int> chIndx, int sampleIndx)
+{
+		bool is3d = false;
+	      hid_t fileid, dataset, dataspace;
+	      open_hdf(file, H5F_ACC_RDONLY, fileid, dataset, dataspace, is3d);
+
+	      //query nrows
+	      int nEvents = get_event_number(fileid, dataset, dataspace, sampleIndx, is3d);
+		  int nCh = chIndx.size();
+		  //allocate buffer
+		  cpp11::writable::doubles_matrix mat(nEvents, nCh);
+			double * data = REAL(mat.data());
+	      if(dataset>0)//make sure the dataset is opened before making readSlice call
+			readSlice_cpp(fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data, is3d);
+	      close_hdf(fileid);
+		  return mat;
+}
