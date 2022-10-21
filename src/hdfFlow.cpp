@@ -176,7 +176,7 @@ void open_hdf(std::string filename, unsigned flags, hid_t & fileid, hid_t & data
  * inline _writeSlice and _writeSlice2d code
  */
 [[cpp11::register]]
-bool writeSlice(std::string filename, cpp11::doubles_matrix data, std::vector<int> chIndx, int sampleIndx, int nRatio) {
+bool writeSlice(std::string filename, cpp11::doubles_matrix <> data, std::vector<int> chIndx, int sampleIndx, int nRatio) {
 
 	H5Eset_auto2(H5E_DEFAULT, (H5E_auto2_t)custom_print_cb, NULL);
 
@@ -633,7 +633,7 @@ void close_hdf(hid_t fileid)
 
 
 [[cpp11::register]]
-cpp11::writable::doubles_matrix readSlice(std::string file, std::vector<int> chIndx, int sampleIndx)
+cpp11::writable::doubles_matrix <> readSlice(std::string file, std::vector<int> chIndx, int sampleIndx)
 {
 		bool is3d = false;
 	      hid_t fileid, dataset, dataspace;
@@ -643,7 +643,7 @@ cpp11::writable::doubles_matrix readSlice(std::string file, std::vector<int> chI
 	      int nEvents = get_event_number(fileid, dataset, dataspace, sampleIndx, is3d);
 		  int nCh = chIndx.size();
 		  //allocate buffer
-		  cpp11::writable::doubles_matrix mat(nEvents, nCh);
+		  cpp11::writable::doubles_matrix <> mat(nEvents, nCh);
 			double * data = REAL(mat.data());
 	      if(dataset>0)//make sure the dataset is opened before making readSlice call
 			readSlice_cpp(fileid, dataset, dataspace, chIndx, sampleIndx, nEvents, data, is3d);

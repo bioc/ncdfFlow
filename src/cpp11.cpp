@@ -13,14 +13,14 @@ extern "C" SEXP _ncdfFlow_createFile(SEXP filename, SEXP nEvent, SEXP nChannel, 
   END_CPP11
 }
 // hdfFlow.cpp
-bool writeSlice(std::string filename, cpp11::doubles_matrix data, std::vector<int> chIndx, int sampleIndx, int nRatio);
+bool writeSlice(std::string filename, cpp11::doubles_matrix <> data, std::vector<int> chIndx, int sampleIndx, int nRatio);
 extern "C" SEXP _ncdfFlow_writeSlice(SEXP filename, SEXP data, SEXP chIndx, SEXP sampleIndx, SEXP nRatio) {
   BEGIN_CPP11
-    return cpp11::as_sexp(writeSlice(cpp11::as_cpp<cpp11::decay_t<std::string>>(filename), cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix>>(data), cpp11::as_cpp<cpp11::decay_t<std::vector<int>>>(chIndx), cpp11::as_cpp<cpp11::decay_t<int>>(sampleIndx), cpp11::as_cpp<cpp11::decay_t<int>>(nRatio)));
+    return cpp11::as_sexp(writeSlice(cpp11::as_cpp<cpp11::decay_t<std::string>>(filename), cpp11::as_cpp<cpp11::decay_t<cpp11::doubles_matrix <>>>(data), cpp11::as_cpp<cpp11::decay_t<std::vector<int>>>(chIndx), cpp11::as_cpp<cpp11::decay_t<int>>(sampleIndx), cpp11::as_cpp<cpp11::decay_t<int>>(nRatio)));
   END_CPP11
 }
 // hdfFlow.cpp
-cpp11::writable::doubles_matrix readSlice(std::string file, std::vector<int> chIndx, int sampleIndx);
+cpp11::writable::doubles_matrix <> readSlice(std::string file, std::vector<int> chIndx, int sampleIndx);
 extern "C" SEXP _ncdfFlow_readSlice(SEXP file, SEXP chIndx, SEXP sampleIndx) {
   BEGIN_CPP11
     return cpp11::as_sexp(readSlice(cpp11::as_cpp<cpp11::decay_t<std::string>>(file), cpp11::as_cpp<cpp11::decay_t<std::vector<int>>>(chIndx), cpp11::as_cpp<cpp11::decay_t<int>>(sampleIndx)));
