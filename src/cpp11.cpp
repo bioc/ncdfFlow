@@ -3,6 +3,7 @@
 
 
 #include "cpp11/declarations.hpp"
+#include <R_ext/Visibility.h>
 
 // hdfFlow.cpp
 bool createFile(std::string filename, int nEvent, int nChannel, int nSample, int nDim, int nCompressionRatio, bool is_libver_earliest);
@@ -27,11 +28,6 @@ extern "C" SEXP _ncdfFlow_readSlice(SEXP file, SEXP chIndx, SEXP sampleIndx) {
 }
 
 extern "C" {
-/* .Call calls */
-extern SEXP _ncdfFlow_createFile(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP _ncdfFlow_readSlice(SEXP, SEXP, SEXP);
-extern SEXP _ncdfFlow_writeSlice(SEXP, SEXP, SEXP, SEXP, SEXP);
-
 static const R_CallMethodDef CallEntries[] = {
     {"_ncdfFlow_createFile", (DL_FUNC) &_ncdfFlow_createFile, 7},
     {"_ncdfFlow_readSlice",  (DL_FUNC) &_ncdfFlow_readSlice,  3},
@@ -40,7 +36,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 }
 
-extern "C" void R_init_ncdfFlow(DllInfo* dll){
+extern "C" attribute_visible void R_init_ncdfFlow(DllInfo* dll){
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
   R_forceSymbols(dll, TRUE);
